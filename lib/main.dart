@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'screens/tarefas_screen.dart';
+import 'screens/geolocalizacao_screen.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -14,12 +14,12 @@ class MeuApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Aula 13 - SQLite',
+      title: 'Aula 14 - GPS',
       theme: ThemeData(
         useMaterial3: true,
-        colorSchemeSeed: Colors.teal,
+        colorSchemeSeed: Colors.lightBlue,
       ),
-      home: const TarefasScreen(),
+      home: const GeolocalizacaoScreen(),
     );
   }
 }

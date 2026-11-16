@@ -1,43 +1,48 @@
-# Aula 13 — Persistência de Dados com SQLite (sqflite)
+# Aula 14 — Geolocalização e GPS com Flutter
 
-Aplicativo Flutter de gerenciamento de tarefas com CRUD completo em SQLite,
-desenvolvido a partir do roteiro da Aula 13.
+Aplicativo Flutter de check-in com captura de coordenadas, rastreamento contínuo
+e integração com o Google Maps, desenvolvido a partir do roteiro da Aula 14.
 
 ## Funcionalidades
 
-- **Create**: cadastro de tarefas em um modal (`BottomSheet`).
-- **Read**: listagem reativa com `ListView.builder` e `RefreshIndicator`.
-- **Update**: edição da tarefa e marcação de concluída pelo `Checkbox`.
-- **Delete**: exclusão com confirmação.
-- **Contador no AppBar**: tarefas concluídas / total.
-- **Busca SQL**: filtro por título ou descrição usando `LIKE`.
-- **Filtro por categoria**: abas para Todas, Geral, Trabalho, Pessoal e Estudos.
+- Captura única de latitude, longitude, precisão e altitude com `getCurrentPosition`.
+- Rastreamento contínuo com `getPositionStream`.
+- Verificação de GPS ativo e solicitação de permissões nativas.
+- Tratamento de permissões negadas e negadas permanentemente.
+- **Desafio básico:** chip de precisão (verde, amarelo ou vermelho).
+- **Desafio intermediário:** distância até a Fatec Matão com `distanceBetween`.
+- **Desafio avançado:** botão para abrir a posição no Google Maps com `url_launcher`.
+- Indicador visual de rastreamento ativo no AppBar.
 
 ## Estrutura
 
 ```text
 lib/
-├── database/
-│   └── database_helper.dart   # Singleton, conexão e operações CRUD
-├── models/
-│   └── tarefa_model.dart      # Modelo com toMap() e fromMap()
 ├── screens/
-│   └── tarefas_screen.dart    # Interface reativa e formulário
-└── main.dart                  # Configuração do MaterialApp
+│   ├── geolocalizacao_screen.dart  # Interface de check-in e GPS
+│   └── tarefas_screen.dart         # Tela da Aula 13 (preservada)
+├── services/
+│   ├── location_service.dart       # Permissões e acesso ao GPS
+│   └── preferences_service.dart    # Aula 12 (preservada)
+├── utils/
+│   └── geo_utils.dart              # Precisão, distância e formatação
+└── main.dart                       # Entrada do app (Aula 14)
 ```
 
-## Banco de dados
+## Permissões
 
-Arquivo: `tarefas_app.db`
+### Android — `android/app/src/main/AndroidManifest.xml`
 
-```sql
-CREATE TABLE tarefas (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  titulo TEXT NOT NULL,
-  descricao TEXT NOT NULL,
-  concluida INTEGER NOT NULL DEFAULT 0,
-  categoria TEXT NOT NULL DEFAULT 'Geral'
-);
+```xml
+<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+```
+
+### iOS — `ios/Runner/Info.plist`
+
+```xml
+<key>NSLocationWhenInUseUsageDescription</key>
+<string>Permite exibir sua localização atual e calcular a distância até a Fatec Matão.</string>
 ```
 
 ## Como executar
@@ -47,28 +52,25 @@ flutter pub get
 flutter run
 ```
 
-> O `sqflite` funciona em Android, iOS e macOS. Para executar em Windows ou
-> Linux é necessário adicionar o pacote `sqflite_common_ffi` e configurar o
-> `databaseFactory`.
+> O GPS deve ser testado em um dispositivo físico ou emulador Android com
+> localização configurada. Em emuladores, use `adb emu geo fix <longitude> <latitude>`.
 
 ## Testes
 
 ```bash
-flutter test
 flutter analyze
+flutter test
 ```
 
-Os testes cobrem a serialização do `TarefaModel` (`toMap` / `fromMap`).
+Os testes cobrem a classificação de precisão, a formatação de distância e o
+estado inicial da tela de geolocalização.
 
 ## Versionamento sugerido
 
 ```bash
-git init
-git add lib/models/ lib/database/ pubspec.yaml
-git commit -m "feat: implementa modelo TarefaModel e camada DatabaseHelper com SQLite"
-git add lib/screens/ lib/main.dart test/ README.md
-git commit -m "feat: constroi interface reativa de tarefas com CRUD completo no SQLite"
-git branch -M main
-git remote add origin URL_DO_SEU_REPOSITORIO
-git push -u origin main
+git add android/app/src/main/AndroidManifest.xml ios/Runner/Info.plist pubspec.yaml lib/services/location_service.dart lib/utils/geo_utils.dart
+git commit -m "feat: configura permissoes de GPS e servico LocationService"
+git add lib/screens/geolocalizacao_screen.dart lib/main.dart test/
+git commit -m "feat: constroi interface de check-in com coordenadas e rastreamento em tempo real"
+git push
 ```
