@@ -1,32 +1,48 @@
-# Aula 14 — Geolocalização e GPS com Flutter
+# Aula 15 — Câmera e Galeria de Mídia com Flutter
 
-Aplicativo Flutter de check-in com captura de coordenadas, rastreamento contínuo
-e integração com o Google Maps, desenvolvido a partir do roteiro da Aula 14.
+Aplicativo Flutter de perfil de usuário com captura de foto pela câmera, seleção
+na galeria e persistência do caminho da imagem, desenvolvido a partir do roteiro
+da Aula 15.
 
 ## Funcionalidades
 
-- Captura única de latitude, longitude, precisão e altitude com `getCurrentPosition`.
-- Rastreamento contínuo com `getPositionStream`.
-- Verificação de GPS ativo e solicitação de permissões nativas.
-- Tratamento de permissões negadas e negadas permanentemente.
-- **Desafio básico:** chip de precisão (verde, amarelo ou vermelho).
-- **Desafio intermediário:** distância até a Fatec Matão com `distanceBetween`.
-- **Desafio avançado:** botão para abrir a posição no Google Maps com `url_launcher`.
-- Indicador visual de rastreamento ativo no AppBar.
+- Captura de foto com a câmera nativa (`ImageSource.camera`).
+- Seleção de imagem na galeria (`ImageSource.gallery`).
+- Compressão leve no momento da escolha (`imageQuality: 85`, `maxWidth: 1080`).
+- Exibição em `CircleAvatar` com `FileImage` e avatar padrão (`Icons.person`).
+- Modal (`showModalBottomSheet`) para escolher a origem da mídia.
+- Estado de carregamento e tratamento de erros ao acessar câmera/galeria.
+- **Desafio básico:** opção “Remover Foto” no modal, voltando ao avatar padrão.
+- **Desafio intermediário:** toque na foto abre a visualização em tela cheia com
+  animação `Hero` e zoom por gesto de pinça (`InteractiveViewer`).
+- **Desafio avançado:** caminho da foto e nome do perfil persistidos com
+  `SharedPreferences`, restaurados ao reabrir o app.
 
 ## Estrutura
 
 ```text
 lib/
 ├── screens/
-│   ├── geolocalizacao_screen.dart  # Interface de check-in e GPS
-│   └── tarefas_screen.dart         # Tela da Aula 13 (preservada)
+│   ├── perfil_screen.dart           # Perfil, modal e avatar
+│   ├── foto_visualizacao_screen.dart # Tela cheia com Hero + zoom
+│   ├── geolocalizacao_screen.dart    # Aula 14 (preservada)
+│   └── tarefas_screen.dart           # Aula 13 (preservada)
 ├── services/
-│   ├── location_service.dart       # Permissões e acesso ao GPS
-│   └── preferences_service.dart    # Aula 12 (preservada)
+│   ├── media_service.dart            # image_picker (câmera e galeria)
+│   ├── perfil_service.dart           # Persistência de nome e caminho da foto
+│   ├── location_service.dart         # Aula 14 (preservada)
+│   └── preferences_service.dart      # Aula 12 (preservada)
 ├── utils/
-│   └── geo_utils.dart              # Precisão, distância e formatação
-└── main.dart                       # Entrada do app (Aula 14)
+│   └── geo_utils.dart                # Aula 14 (preservada)
+└── main.dart                         # Entrada do app (Aula 15)
+```
+
+## Dependências
+
+```yaml
+dependencies:
+  image_picker: ^1.1.0 # Câmera e galeria de fotos
+  shared_preferences: 2.2.2 # Persistência do caminho da foto
 ```
 
 ## Permissões
@@ -34,15 +50,25 @@ lib/
 ### Android — `android/app/src/main/AndroidManifest.xml`
 
 ```xml
-<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+<uses-permission android:name="android.permission.CAMERA" />
+<uses-permission
+    android:name="android.permission.READ_EXTERNAL_STORAGE"
+    android:maxSdkVersion="32" />
+<uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+<uses-feature android:name="android.hardware.camera" android:required="false" />
 ```
+
+O `image_picker` solicita a permissão de câmera em tempo de execução quando ela
+está declarada no manifesto. No Android 13+ a galeria usa o Photo Picker do
+sistema, que não exige permissão de armazenamento.
 
 ### iOS — `ios/Runner/Info.plist`
 
 ```xml
-<key>NSLocationWhenInUseUsageDescription</key>
-<string>Permite exibir sua localização atual e calcular a distância até a Fatec Matão.</string>
+<key>NSCameraUsageDescription</key>
+<string>Permite tirar uma foto para usar como imagem de perfil.</string>
+<key>NSPhotoLibraryUsageDescription</key>
+<string>Permite escolher uma foto da galeria para usar como imagem de perfil.</string>
 ```
 
 ## Como executar
@@ -52,8 +78,9 @@ flutter pub get
 flutter run
 ```
 
-> O GPS deve ser testado em um dispositivo físico ou emulador Android com
-> localização configurada. Em emuladores, use `adb emu geo fix <longitude> <latitude>`.
+> A câmera deve ser testada em dispositivo físico ou emulador Android com câmera
+> virtual configurada. Para popular a galeria do emulador:
+> `adb push foto.jpg /sdcard/Pictures/` seguido de um novo scan de mídia.
 
 ## Testes
 
@@ -62,15 +89,17 @@ flutter analyze
 flutter test
 ```
 
-Os testes cobrem a classificação de precisão, a formatação de distância e o
-estado inicial da tela de geolocalização.
+Os testes cobrem a persistência de nome/caminho da foto, o estado inicial da
+tela de perfil e as opções exibidas no modal de mídia.
 
 ## Versionamento sugerido
 
 ```bash
-git add android/app/src/main/AndroidManifest.xml ios/Runner/Info.plist pubspec.yaml lib/services/location_service.dart lib/utils/geo_utils.dart
-git commit -m "feat: configura permissoes de GPS e servico LocationService"
-git add lib/screens/geolocalizacao_screen.dart lib/main.dart test/
-git commit -m "feat: constroi interface de check-in com coordenadas e rastreamento em tempo real"
+git add pubspec.yaml android/app/src/main/AndroidManifest.xml ios/Runner/Info.plist lib/services/media_service.dart
+git commit -m "feat: adiciona image_picker e permissoes de camera e galeria"
+
+git add lib/services/perfil_service.dart lib/screens/perfil_screen.dart lib/screens/foto_visualizacao_screen.dart lib/main.dart test/
+git commit -m "feat: implementa captura de foto de perfil com image_picker"
+
 git push
 ```
