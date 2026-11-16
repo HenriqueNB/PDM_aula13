@@ -33,6 +33,8 @@ dependencies:
   shared_preferences: 2.2.2 # Pacote oficial de armazenamento chave-valor
   sqflite: ^2.3.2 # Banco de dados SQLite local
   path: ^1.9.0 # Manipulação de caminhos de arquivos
+  geolocator: ^11.0.0 # GPS e geolocalização
+  url_launcher: ^6.3.0 # Abertura de links externos (Google Maps)
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
